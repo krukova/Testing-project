@@ -15,48 +15,46 @@ import java.util.regex.Pattern;
 
 public class Main {
     public static Map<String, String> map = new HashMap<String, String>();
+    public static ArrayList<String> list = new ArrayList<>();
+    public static String record;
 
     public static void main(String[] args) throws IOException {
 
-        String[] data = new String[]{"C:\\Users\\cactus\\Downloads\\123.txt", "DownlinkPortID=4"}; //тестовые данные
-        boolean flag = false;
-        ArrayList<String> list = new ArrayList<>(); //массив для записи строк, подходящих по значению
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(data[0]));
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss.S");
-        //сохрание всех аргументов в словарь
+        String[] data = new String[]{"C:\\Users\\cactus\\Downloads\\123.txt", "user_id=89210077293"};
+
         for (int i = 1; i < data.length; i++) {
-            String[] name = data[i].split("=");
-            map.put(name[0], name[1]);
+            String[] pair = data[i].split("=");
+            map.put(pair[0], pair[1]);
         }
-        //запись всех строк из файла
-        //List<String> lines = Files.readAllLines(Paths.get(data[0]), StandardCharsets.UTF_8);
 
-        while (bufferedReader.ready())
-        {
-            String record = bufferedReader.readLine();
-            String[] parametrs = record.split(";", 7);
+        List<String> lines = Files.readAllLines(Paths.get(data[0]), StandardCharsets.UTF_8);
+
+        for (String line : lines) {
+            record = line;
             Record record1 = new Record();
-            try {
-                record1.setDate_time(dateFormat.parse(parametrs[0]));
-                record1.setUser_id(Integer.parseInt(parametrs[1]));
-                record1.setService(Integer.parseInt(parametrs[2]));
-                record1.setProtocol(Integer.parseInt(parametrs[3]));
-                record1.setUpload(Integer.parseInt(parametrs[4]));
-                record1.setDownload(Integer.parseInt(parametrs[5]));
-                record1.setMetadata(record1.convertString(parametrs[6]));
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                
-            }
-
-
-
+            record1.convert(record);
+            compareMap(record1.getData());
         }
 
+        if (!list.isEmpty()) {
+            list.forEach(record -> System.out.println(record));
+        } else {
+            System.out.println("Совпадений не найдено");
+        }
 
+    }
 
+    public static void compareMap(Map<String, String> records) {
+        int countCompare = 0;
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            for (Map.Entry<String, String> pair : records.entrySet()) {
+                if (entry.getKey().equals(pair.getKey()) && entry.getValue().equals(pair.getValue())) {
+                    countCompare++;
+                }
+            }
+        }
+        if (countCompare == map.size()) {
+            list.add(record);
+        }
     }
 }
